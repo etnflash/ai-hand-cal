@@ -1,0 +1,50 @@
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 0.55rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  background: #0b2a32;
+  color: #e8fffb;
+}
+
+.hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.75rem 1rem;
+  background: color-mix(in srgb, #0f8a82 14%, white);
+  border-bottom: 1px solid var(--line);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.hint p {
+  margin: 0;
+  flex: 1;
+  min-width: 12rem;
+}
+
+.hint strong {
+  color: var(--accent-ink);
+}
+
+.btn {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--line-strong);
+  background: white;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
