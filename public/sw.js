@@ -1,5 +1,5 @@
-/* Hand Cal offline service worker */
-const CACHE = "handcal-v2";
+/* Hand Cal offline service worker — caches all lessons on first visit */
+const CACHE = "handcal-v3";
 
 function basePath() {
   const p = self.location.pathname.replace(/\/sw\.js$/, "");
@@ -10,9 +10,15 @@ async function cacheUrl(cache, url) {
   try {
     const res = await fetch(url, { cache: "reload" });
     if (res.ok) await cache.put(url, res);
+    return true;
   } catch {
-    /* ignore individual failures */
+    return false;
   }
+}
+
+async function notify(payload) {
+  const clients = await self.clients.matchAll({ type: "window" });
+  for (const c of clients) c.postMessage(payload);
 }
 
 async function precache() {
@@ -28,7 +34,7 @@ async function precache() {
       urls.push(`${base}/precache.json`);
     }
   } catch {
-    /* fall back to shell only */
+    /* shell only */
   }
 
   urls.push(`${base}/manifest.webmanifest`);
@@ -37,12 +43,24 @@ async function precache() {
   urls.push(`${base}/apple-touch-icon.png`);
 
   const unique = [...new Set(urls)];
-  // Batch to avoid overwhelming the browser
+  let done = 0;
   const chunk = 20;
   for (let i = 0; i < unique.length; i += chunk) {
     const slice = unique.slice(i, i + chunk);
-    await Promise.all(slice.map((u) => cacheUrl(cache, u)));
+    const results = await Promise.all(slice.map((u) => cacheUrl(cache, u)));
+    done += results.filter(Boolean).length;
+    await notify({
+      type: "handcal-precache",
+      done,
+      total: unique.length,
+    });
   }
+  await notify({
+    type: "handcal-precache",
+    done,
+    total: unique.length,
+    finished: true,
+  });
 }
 
 self.addEventListener("install", (event) => {
@@ -62,6 +80,12 @@ self.addEventListener("activate", (event) => {
       )
       .then(() => self.clients.claim()),
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "handcal-precache-now") {
+    event.waitUntil(precache());
+  }
 });
 
 self.addEventListener("fetch", (event) => {
