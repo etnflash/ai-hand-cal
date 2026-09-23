@@ -1,0 +1,161 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.prompt {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ink);
+  margin: 0;
+}
+
+.inputs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 1.75rem;
+  align-items: flex-start;
+}
+
+.inputBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.answerBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: 28rem;
+}
+
+.answerHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.answerLabel {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.shape {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--accent-ink);
+}
+
+.attMap {
+  margin-top: 0.75rem;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.primary,
+.ghost {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  padding: 0.65rem 1.15rem;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    border-color 160ms ease,
+    transform 120ms ease;
+}
+
+.primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--line-strong);
+}
+
+.ghost:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.okMsg {
+  color: var(--ok);
+  font-weight: 600;
+  animation: fadeSlide 320ms ease;
+  margin: 0;
+}
+
+.msg {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.okBox,
+.msgBox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.nextLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.65rem 1.15rem;
+  background: var(--accent);
+  color: var(--paper);
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.nextLink:hover {
+  filter: brightness(1.05);
+}
+
+.hint {
+  padding: 0.85rem 1rem;
+  background: color-mix(in srgb, var(--accent) 8%, var(--panel));
+  border-left: 3px solid var(--accent);
+  animation: fadeSlide 280ms ease;
+}
+
+.hint strong {
+  display: block;
+  font-family: var(--font-display);
+  margin-bottom: 0.35rem;
+}
+
+.hint p {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+@keyframes fadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

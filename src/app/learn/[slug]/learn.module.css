@@ -1,0 +1,17 @@
+.top {
+  display: flex;
+  gap: 1.25rem;
+  padding: 1rem 1.25rem 0;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+.top a {
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--ink-muted);
+}
+
+.top a:hover {
+  color: var(--accent-ink);
+}

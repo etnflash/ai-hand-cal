@@ -1,0 +1,80 @@
+import type { Lesson } from "../types";
+
+export const softmaxLesson: Lesson = {
+  slug: "softmax",
+  title: "Softmax",
+  subtitle: "확률로 바꾸는 정규화",
+  kind: "softmax",
+  trackOrder: 4,
+  stage: "foundation",
+  generatable: true,
+  intro: [
+    "Softmax는 실수 벡터를 합이 1인 확률 분포로 바꿉니다. 분류 로짓과 attention weight에 쓰입니다.",
+    "수치 안정성을 위해 보통 max를 뺀 뒤 exp합니다: softmax(z)_i = exp(z_i - max) / Σ exp(z_j - max).",
+    "아래 연습에서는 소수 네 자리까지 맞으면 정답으로 인정합니다.",
+  ],
+  formula: "softmax(z)_i = e^{z_i} / Σ_j e^{z_j}",
+  exercises: [
+    {
+      id: "sm-1",
+      title: "균등",
+      prompt: "모든 값이 같으면 확률이 균등합니다. 소수 4자리로 적으세요.",
+      inputs: [{ label: "z", matrix: [[2, 2, 2]] }],
+      expected: [[0.3333, 0.3333, 0.3333]],
+      decimals: 4,
+      shapeHint: "입력 [1×3] → 출력도 [1×3], 합은 1",
+      formulaHint: "값이 같으면 각각 1/3 ≈ 0.3333",
+    },
+    {
+      id: "sm-2",
+      title: "두 로짓",
+      prompt: "exp를 직접 계산해 보세요. (e¹≈2.7183, e⁰=1)",
+      inputs: [{ label: "z", matrix: [[1, 0]] }],
+      expected: [[0.7311, 0.2689]],
+      decimals: 4,
+      shapeHint: "[1×2] → [1×2]",
+      formulaHint: "softmax = [e¹, e⁰] / (e¹+e⁰) ≈ [2.7183, 1] / 3.7183",
+    },
+    {
+      id: "sm-3",
+      title: "큰 차이가 있는 로짓",
+      prompt: "가장 큰 값이 대부분의 확률을 가져갑니다.",
+      inputs: [{ label: "z", matrix: [[0, 3, 0]] }],
+      expected: [[0.0474, 0.9052, 0.0474]],
+      decimals: 4,
+      shapeHint: "[1×3] → [1×3], 합 ≈ 1",
+      formulaHint: "max=3을 빼면 [-3, 0, -3]. exp 후 정규화하세요.",
+    },
+    {
+      id: "sm-4",
+      title: "행별 Softmax",
+      prompt: "행렬이면 각 행에 독립적으로 Softmax를 적용합니다.",
+      inputs: [
+        {
+          label: "Z",
+          matrix: [
+            [1, 1],
+            [0, 2],
+          ],
+        },
+      ],
+      expected: [
+        [0.5, 0.5],
+        [0.1192, 0.8808],
+      ],
+      decimals: 4,
+      shapeHint: "[2×2] → [2×2], 각 행의 합이 1",
+      formulaHint: "첫 행은 균등 0.5. 둘째 행은 max=2를 빼고 계산.",
+    },
+    {
+      id: "sm-5",
+      title: "음수 로짓",
+      prompt: "음수만 있어도 Softmax는 양수 확률을 만듭니다.",
+      inputs: [{ label: "z", matrix: [[-1, -2, -3]] }],
+      expected: [[0.6652, 0.2447, 0.0900]],
+      decimals: 4,
+      shapeHint: "[1×3] → [1×3]",
+      formulaHint: "max=-1을 빼면 [0, -1, -2]. exp(0)=1, exp(-1)≈0.3679, exp(-2)≈0.1353",
+    },
+  ],
+};

@@ -1,0 +1,87 @@
+import type { Lesson } from "../types";
+
+export const rmsnormLesson: Lesson = {
+  slug: "rmsnorm",
+  title: "RMSNorm",
+  subtitle: "평균 없이 정규화",
+  kind: "rmsnorm",
+  trackOrder: 8.5,
+  stage: "prep",
+  generatable: true,
+  intro: [
+    "RMSNorm은 평균을 빼지 않고 RMS(제곱의 평균의 제곱근)로만 나눕니다. LLaMA 계열이 LayerNorm 대신 씁니다.",
+    "공식: RMS = √(mean(x²)+ε), y = x / RMS · γ. 손계산에서는 γ=1, ε≈0.",
+  ],
+  formula: "RMSNorm(x) = x / √(mean(x²)+ε) · γ",
+  exercises: [
+    {
+      id: "rms-1",
+      title: "기본",
+      difficulty: "easy",
+      prompt: "x=[0,2]. mean(x²)=2, RMS=√2≈1.41 → [0, 1.41]",
+      inputs: [{ label: "x", matrix: [[0, 2]] }],
+      expected: [[0, 1.41]],
+      decimals: 2,
+      shapeHint: "[1×2]",
+      formulaHint: "√((0+4)/2)=√2 ≈ 1.414 → 2/1.414 ≈ 1.41",
+    },
+    {
+      id: "rms-2",
+      title: "단위 RMS",
+      difficulty: "easy",
+      prompt: "x=[1,1,1,1]. mean(x²)=1 → RMS=1 → 그대로",
+      inputs: [{ label: "x", matrix: [[1, 1, 1, 1]] }],
+      expected: [[1, 1, 1, 1]],
+      decimals: 2,
+      shapeHint: "[1×4]",
+      formulaHint: "평균 제곱 = 1",
+    },
+    {
+      id: "rms-3",
+      title: "3-4-5 패턴",
+      difficulty: "medium",
+      prompt: "x=[3,4]. mean(x²)=12.5, RMS=√12.5≈3.54 → [0.85, 1.13]",
+      inputs: [{ label: "x", matrix: [[3, 4]] }],
+      expected: [[0.85, 1.13]],
+      decimals: 2,
+      shapeHint: "[1×2]",
+      formulaHint: "√((9+16)/2)=√12.5≈3.5355",
+    },
+    {
+      id: "rms-4",
+      title: "γ 스케일",
+      difficulty: "medium",
+      prompt: "x=[2,0] → [1.41,0] 후 γ=2 → [2.83,0]",
+      inputs: [
+        { label: "x", matrix: [[2, 0]] },
+        { label: "γ", matrix: [[2, 2]] },
+      ],
+      expected: [[2.83, 0]],
+      decimals: 2,
+      shapeHint: "[1×2]",
+      formulaHint: "(2/√2)×2 = √2×2 ≈ 2.828",
+    },
+    {
+      id: "rms-5",
+      title: "두 행 독립",
+      difficulty: "hard",
+      prompt: "각 행을 독립 RMSNorm (γ=1)",
+      inputs: [
+        {
+          label: "X",
+          matrix: [
+            [0, 2],
+            [1, 1],
+          ],
+        },
+      ],
+      expected: [
+        [0, 1.41],
+        [1, 1],
+      ],
+      decimals: 2,
+      shapeHint: "[2×2]",
+      formulaHint: "행1: √2, 행2: RMS=1",
+    },
+  ],
+};
