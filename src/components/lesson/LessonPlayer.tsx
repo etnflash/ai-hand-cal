@@ -6,6 +6,7 @@ import type { Difficulty, Exercise, Lesson } from "@/content/types";
 import { DIFFICULTY_LABEL } from "@/content/extraExercises";
 import { getLesson } from "@/content/lessons";
 import { topicOf } from "@/content/topics";
+import { Glossary } from "@/components/lesson/Glossary";
 import { CalcWorkbench } from "@/components/workbench/CalcWorkbench";
 import { generateExercise } from "@/lib/generator";
 import {
@@ -223,6 +224,7 @@ export function LessonPlayer({ lesson }: Props) {
           </p>
         </div>
         <code className={styles.formula}>{lesson.formula}</code>
+        <Glossary lesson={lesson} />
 
         <button
           type="button"

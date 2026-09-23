@@ -5,6 +5,7 @@ import { softmaxLesson } from "./softmax";
 import { crossentropyLesson } from "./crossentropy";
 import { dropoutLesson } from "./dropout";
 import { cnnLesson } from "./cnn";
+import { poolingLesson } from "./pooling";
 import { lstmLesson } from "./lstm";
 import { gnnLesson } from "./gnn";
 import { layernormLesson } from "./layernorm";
@@ -43,6 +44,7 @@ export const lessons: Lesson[] = [
   crossentropyLesson,
   dropoutLesson,
   cnnLesson,
+  poolingLesson,
   lstmLesson,
   gnnLesson,
   layernormLesson,

@@ -29,7 +29,7 @@ export { createRng, randInt, randomMatrix, hashSeed } from "./rng";
 export { layerNormRows, rmsNormRows } from "./norm";
 export { loraLinear, loraDeltaW } from "./lora";
 export { sinusoidalPE, addPositional } from "./positional";
-export { conv2dValid, conv1dValid } from "./cnn";
+export { conv2dValid, conv1dValid, maxPool2d, avgPool2d } from "./cnn";
 export {
   lstmStepFromGates,
   lstmCellUpdate,

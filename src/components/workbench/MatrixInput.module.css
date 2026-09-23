@@ -29,6 +29,19 @@
     transform 120ms ease;
 }
 
+@media (max-width: 640px) {
+  .grid {
+    gap: 6px;
+    min-width: min-content;
+  }
+
+  .cell {
+    min-width: 2.75rem;
+    min-height: 2.85rem;
+    font-size: 1.05rem;
+  }
+}
+
 .cell:focus {
   border-color: var(--accent);
   box-shadow:

@@ -48,3 +48,24 @@
   border-color: var(--accent);
   color: var(--accent-ink);
 }
+
+.actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.install {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+}
+
+.install:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}

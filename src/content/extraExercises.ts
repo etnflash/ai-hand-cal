@@ -1,7 +1,9 @@
 import type { Difficulty, Exercise } from "./types";
 import {
   attention,
+  applyCausalMask,
   bceLoss,
+  causalSoftmax,
   conv2dValid,
   diffuseForward,
   diffuseReverseStep,
@@ -13,14 +15,21 @@ import {
   logAbsDetDiag,
   loraLinear,
   matmul,
+  maxPool2d,
+  avgPool2d,
   messageAggregate,
   predictX0,
   realNvpCouple,
   reparameterize,
   relu,
+  rmsNormRows,
+  rope2d,
   roundMatrix,
   scaleShiftMatrix,
   softmaxRows,
+  splitHeads,
+  concatHeads,
+  applyDropout,
 } from "@/engine";
 
 /**
@@ -426,6 +435,100 @@ export const EXTRA_EXERCISES: Record<string, Exercise[]> = {
       shapeHint: "[2×2]*[2×2]→[1×1]",
       formulaHint: "2·1+3·(-1)+5·0+5·1=4",
     },
+    {
+      id: "cnn-h2",
+      difficulty: "hard",
+      title: "합성곱 → MaxPool",
+      prompt: "Y를 이미 합성곱 결과로 두고 2×2 Max-pool",
+      inputs: [
+        {
+          label: "Y",
+          matrix: [
+            [1, 4, 0, 2],
+            [3, 2, 5, 1],
+            [0, 6, 1, 1],
+            [2, 2, 9, 0],
+          ],
+        },
+      ],
+      expected: maxPool2d(
+        [
+          [1, 4, 0, 2],
+          [3, 2, 5, 1],
+          [0, 6, 1, 1],
+          [2, 2, 9, 0],
+        ],
+        2,
+        2,
+      ),
+      shapeHint: "[4×4]→[2×2]",
+      formulaHint: "4,5 / 6,9",
+    },
+  ],
+
+  pooling: [
+    {
+      id: "pool-m1",
+      difficulty: "medium",
+      title: "Avg 소수",
+      prompt: "2×2 Avg-pool (소수 1자리)",
+      inputs: [
+        {
+          label: "X",
+          matrix: [
+            [1, 2, 0, 0],
+            [3, 0, 4, 4],
+            [1, 1, 2, 2],
+            [1, 1, 2, 2],
+          ],
+        },
+      ],
+      expected: roundMatrix(
+        avgPool2d(
+          [
+            [1, 2, 0, 0],
+            [3, 0, 4, 4],
+            [1, 1, 2, 2],
+            [1, 1, 2, 2],
+          ],
+          2,
+          2,
+        ),
+        1,
+      ),
+      decimals: 1,
+      shapeHint: "[4×4]→[2×2]",
+      formulaHint: "(1+2+3+0)/4=1.5",
+    },
+    {
+      id: "pool-h1",
+      difficulty: "hard",
+      title: "겹치는 stride",
+      prompt: "2×2 Max, stride=1 → 출력 2×2 (입력 3×3)",
+      inputs: [
+        {
+          label: "X",
+          matrix: [
+            [1, 0, 2],
+            [3, 4, 1],
+            [0, 5, 2],
+          ],
+        },
+      ],
+      expected: maxPool2d(
+        [
+          [1, 0, 2],
+          [3, 4, 1],
+          [0, 5, 2],
+        ],
+        2,
+        2,
+        1,
+        1,
+      ),
+      shapeHint: "stride 1",
+      formulaHint: "좌상 max=4, 우상=4, 좌하=5, 우하=5",
+    },
   ],
 
   lstm: [
@@ -459,6 +562,19 @@ export const EXTRA_EXERCISES: Record<string, Exercise[]> = {
       decimals: 1,
       shapeHint: "c1=1, c2=0.5·1+0.5·2=1.5",
       formulaHint: "동일 게이트로 2스텝",
+    },
+    {
+      id: "lstm-h2",
+      difficulty: "hard",
+      title: "숨김 h",
+      prompt: "c'=[0,0], o=[1,0.5] → h'=o⊙tanh(c')=0",
+      inputs: [
+        { label: "o", matrix: [[1, 0.5]] },
+        { label: "c'", matrix: [[0, 0]] },
+      ],
+      expected: [[0, 0]],
+      shapeHint: "[1×2]",
+      formulaHint: "tanh0=0",
     },
   ],
 
@@ -812,6 +928,80 @@ export const EXTRA_EXERCISES: Record<string, Exercise[]> = {
       decimals: 2,
       shapeHint: "[3×3]",
       formulaHint: "Q=K=X",
+    },
+    {
+      id: "sa-m2",
+      difficulty: "medium",
+      title: "weights만",
+      prompt: "이미 만든 scores를 Softmax (소수 2자리)",
+      inputs: [
+        {
+          label: "scores",
+          matrix: [
+            [0, 0],
+            [2, 0],
+          ],
+        },
+      ],
+      expected: roundMatrix(
+        softmaxRows([
+          [0, 0],
+          [2, 0],
+        ]),
+        2,
+      ),
+      decimals: 2,
+      shapeHint: "[2×2]",
+      formulaHint: "행1 균등, 행2는 첫 칸 큼",
+    },
+    {
+      id: "sa-h2",
+      difficulty: "hard",
+      title: "작은 Self-Attn out",
+      prompt: "Attention(Q,K,V) output (소수 2자리)",
+      inputs: [
+        {
+          label: "Q",
+          matrix: [
+            [1, 0],
+            [0, 1],
+          ],
+        },
+        {
+          label: "K",
+          matrix: [
+            [1, 0],
+            [0, 1],
+          ],
+        },
+        {
+          label: "V",
+          matrix: [
+            [1, 2],
+            [3, 4],
+          ],
+        },
+      ],
+      expected: roundMatrix(
+        attention(
+          [
+            [1, 0],
+            [0, 1],
+          ],
+          [
+            [1, 0],
+            [0, 1],
+          ],
+          [
+            [1, 2],
+            [3, 4],
+          ],
+        ).output,
+        2,
+      ),
+      decimals: 2,
+      shapeHint: "[2×2]",
+      formulaHint: "scaled dot-product",
     },
   ],
 
@@ -1437,6 +1627,222 @@ export const EXTRA_EXERCISES: Record<string, Exercise[]> = {
       decimals: 2,
       shapeHint: "[1×2]",
       formulaHint: "같은 ε로 되돌리면 x0",
+    },
+  ],
+
+  rope: [
+    {
+      id: "rope-m1",
+      difficulty: "medium",
+      title: "θ=π/2",
+      prompt: "(x,y)에 θ=π/2 → (−y, x)",
+      inputs: [{ label: "(x,y)", matrix: [[3, 1]] }],
+      expected: [[-1, 3]],
+      shapeHint: "[1×2]",
+      formulaHint: "cos0=0? π/2: cos=0 sin=1 → (−y,x)",
+    },
+    {
+      id: "rope-h1",
+      difficulty: "hard",
+      title: "두 쌍",
+      prompt: "각 쌍에 θ=0 (항등). 그대로",
+      inputs: [
+        {
+          label: "v",
+          matrix: [
+            [1, 2, 3, 4],
+          ],
+        },
+      ],
+      expected: [[1, 2, 3, 4]],
+      shapeHint: "[1×4]",
+      formulaHint: "θ=0",
+    },
+  ],
+
+  multihead: [
+    {
+      id: "mh-m1",
+      difficulty: "medium",
+      title: "3 토큰 split",
+      prompt: "d=4, h=2. 첫 행만 두 head로 나눠 세로로 쌓기",
+      inputs: [
+        {
+          label: "Q",
+          matrix: [[1, 2, 3, 4]],
+        },
+      ],
+      expected: splitHeads([[1, 2, 3, 4]], 2).flatMap((h) => h),
+      shapeHint: "2×[1×2] → [2×2]",
+      formulaHint: "[1,2] / [3,4]",
+    },
+    {
+      id: "mh-h1",
+      difficulty: "hard",
+      title: "concat 복원",
+      prompt: "head0=[1,0], head1=[0,1] → concat",
+      inputs: [
+        { label: "h0", matrix: [[1, 0]] },
+        { label: "h1", matrix: [[0, 1]] },
+      ],
+      expected: concatHeads([[[1, 0]], [[0, 1]]]),
+      shapeHint: "[1×4]",
+      formulaHint: "[1,0,0,1]",
+    },
+  ],
+
+  causal: [
+    {
+      id: "causal-m1",
+      difficulty: "medium",
+      title: "마스크 −99",
+      prompt: "3×3 점수에 causal 마스크 (−99)",
+      inputs: [
+        {
+          label: "S",
+          matrix: [
+            [1, 2, 3],
+            [4, 5, 6],
+            [7, 8, 9],
+          ],
+        },
+      ],
+      expected: applyCausalMask(
+        [
+          [1, 2, 3],
+          [4, 5, 6],
+          [7, 8, 9],
+        ],
+        -99,
+      ),
+      shapeHint: "[3×3]",
+      formulaHint: "j>i → −99",
+    },
+    {
+      id: "causal-h1",
+      difficulty: "hard",
+      title: "마스크 Softmax",
+      prompt: "마스크 후 Softmax (소수 2자리)",
+      inputs: [
+        {
+          label: "S",
+          matrix: [
+            [0, 0],
+            [1, 1],
+          ],
+        },
+      ],
+      expected: roundMatrix(causalSoftmax([[0, 0], [1, 1]], -99), 2),
+      decimals: 2,
+      shapeHint: "[2×2]",
+      formulaHint: "행0≈[1,0], 행1=[0.5,0.5]",
+    },
+  ],
+
+  rmsnorm: [
+    {
+      id: "rms-m1",
+      difficulty: "medium",
+      title: "길이 3",
+      prompt: "RMSNorm γ=1 (소수 2자리)",
+      inputs: [{ label: "x", matrix: [[0, 3, 4]] }],
+      expected: roundMatrix(rmsNormRows([[0, 3, 4]]), 2),
+      decimals: 2,
+      shapeHint: "[1×3]",
+      formulaHint: "mean(x²)=(0+9+16)/3=25/3",
+    },
+    {
+      id: "rms-h1",
+      difficulty: "hard",
+      title: "두 행",
+      prompt: "행별 RMSNorm",
+      inputs: [
+        {
+          label: "X",
+          matrix: [
+            [0, 2],
+            [3, 4],
+          ],
+        },
+      ],
+      expected: roundMatrix(
+        rmsNormRows([
+          [0, 2],
+          [3, 4],
+        ]),
+        2,
+      ),
+      decimals: 2,
+      shapeHint: "[2×2]",
+      formulaHint: "행1 √2, 행2 √12.5",
+    },
+  ],
+
+  dropout: [
+    {
+      id: "drop-m1",
+      difficulty: "medium",
+      title: "마스크 스케일",
+      prompt: "y = x⊙m (keep=1, 스케일 없음)",
+      inputs: [
+        { label: "x", matrix: [[2, 4, 6]] },
+        { label: "m", matrix: [[1, 0, 1]] },
+      ],
+      expected: applyDropout([[2, 4, 6]], [[1, 0, 1]], 1),
+      shapeHint: "[1×3]",
+      formulaHint: "[2,0,6]",
+    },
+    {
+      id: "drop-h1",
+      difficulty: "hard",
+      title: "keep 0.5 스케일",
+      prompt: "keepProb=0.5 → 살린 칸 ×2",
+      inputs: [
+        { label: "x", matrix: [[1, 1, 1, 1]] },
+        { label: "m", matrix: [[1, 0, 1, 0]] },
+      ],
+      expected: applyDropout([[1, 1, 1, 1]], [[1, 0, 1, 0]], 0.5),
+      shapeHint: "[1×4]",
+      formulaHint: "[2,0,2,0]",
+    },
+  ],
+
+  crossentropy: [
+    {
+      id: "ce-m1",
+      difficulty: "medium",
+      title: "3클래스 Softmax",
+      prompt: "로짓 Softmax (소수 2자리)",
+      inputs: [{ label: "z", matrix: [[0, 0, 0]] }],
+      expected: roundMatrix(softmaxRows([[0, 0, 0]]), 2),
+      decimals: 2,
+      shapeHint: "[1×3]",
+      formulaHint: "균등 0.33",
+    },
+    {
+      id: "ce-h1",
+      difficulty: "hard",
+      title: "배치 Softmax",
+      prompt: "두 행 Softmax",
+      inputs: [
+        {
+          label: "Z",
+          matrix: [
+            [1, 1],
+            [0, 2],
+          ],
+        },
+      ],
+      expected: roundMatrix(
+        softmaxRows([
+          [1, 1],
+          [0, 2],
+        ]),
+        2,
+      ),
+      decimals: 2,
+      shapeHint: "[2×2]",
+      formulaHint: "행1 0.5/0.5",
     },
   ],
 };

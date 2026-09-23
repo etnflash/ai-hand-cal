@@ -4,6 +4,8 @@ import {
   causalSoftmax,
   concatCache,
   conv2dValid,
+  maxPool2d,
+  avgPool2d,
   createRng,
   diffuseForward,
   hashSeed,
@@ -152,6 +154,24 @@ export function generateExercise(
       expected: conv2dValid(x, ker),
       shapeHint: `[${size}×${size}]*[${ks}×${ks}]`,
       formulaHint: "윈도우 내적",
+    };
+  }
+
+  if (lesson.kind === "pooling") {
+    const x = randomMatrix(rng, 4, 4, 0, 9);
+    const useMax = difficulty !== "hard";
+    return {
+      id: `gen-pool-${difficulty}-${seed}`,
+      difficulty,
+      title: `${tag} ${useMax ? "Max" : "Avg"}Pool #${seed % 10000}`,
+      prompt: useMax ? "2×2 Max-pool (stride 2)" : "2×2 Avg-pool (stride 2)",
+      inputs: [{ label: "X", matrix: x }],
+      expected: useMax
+        ? maxPool2d(x, 2, 2)
+        : roundMatrix(avgPool2d(x, 2, 2), 2),
+      decimals: useMax ? undefined : 2,
+      shapeHint: "[4×4]→[2×2]",
+      formulaHint: useMax ? "창 최댓값" : "창 평균",
     };
   }
 

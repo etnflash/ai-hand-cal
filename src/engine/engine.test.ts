@@ -18,6 +18,7 @@ import {
   concatCache,
   reparameterize,
   diffuseForward,
+  maxPool2d,
   splitHeads,
   concatHeads,
   rope2d,
@@ -255,6 +256,24 @@ describe("cnn / kv / vae / diffusion", () => {
 
   it("diffuse alphaBar=1", () => {
     expect(diffuseForward([[3, -1]], [[9, 9]], 1)).toEqual([[3, -1]]);
+  });
+
+  it("maxPool2d", () => {
+    expect(
+      maxPool2d(
+        [
+          [1, 3, 2, 0],
+          [4, 1, 0, 5],
+          [2, 2, 8, 1],
+          [0, 7, 3, 3],
+        ],
+        2,
+        2,
+      ),
+    ).toEqual([
+      [4, 5],
+      [7, 8],
+    ]);
   });
 });
 

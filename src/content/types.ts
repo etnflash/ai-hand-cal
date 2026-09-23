@@ -6,6 +6,7 @@ export type LessonKind =
   | "mlp"
   | "softmax"
   | "cnn"
+  | "pooling"
   | "lstm"
   | "gnn"
   | "layernorm"

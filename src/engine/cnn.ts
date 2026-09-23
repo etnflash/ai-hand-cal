@@ -39,3 +39,61 @@ export function conv1dValid(signal: number[], kernel: number[]): number[] {
     return sum;
   });
 }
+
+/** Max-pool 2D */
+export function maxPool2d(
+  image: Matrix,
+  poolH: number,
+  poolW: number,
+  strideH = poolH,
+  strideW = poolW,
+): Matrix {
+  const H = image.length;
+  const W = image[0]?.length ?? 0;
+  const outH = Math.floor((H - poolH) / strideH) + 1;
+  const outW = Math.floor((W - poolW) / strideW) + 1;
+  if (outH <= 0 || outW <= 0) throw new Error("maxPool2d: bad size");
+  const out = zeros(outH, outW);
+  for (let i = 0; i < outH; i++) {
+    for (let j = 0; j < outW; j++) {
+      let m = -Infinity;
+      for (let u = 0; u < poolH; u++) {
+        for (let v = 0; v < poolW; v++) {
+          const val = image[i * strideH + u][j * strideW + v];
+          if (val > m) m = val;
+        }
+      }
+      out[i][j] = m;
+    }
+  }
+  return out;
+}
+
+/** Average-pool 2D */
+export function avgPool2d(
+  image: Matrix,
+  poolH: number,
+  poolW: number,
+  strideH = poolH,
+  strideW = poolW,
+): Matrix {
+  const H = image.length;
+  const W = image[0]?.length ?? 0;
+  const outH = Math.floor((H - poolH) / strideH) + 1;
+  const outW = Math.floor((W - poolW) / strideW) + 1;
+  if (outH <= 0 || outW <= 0) throw new Error("avgPool2d: bad size");
+  const out = zeros(outH, outW);
+  const area = poolH * poolW;
+  for (let i = 0; i < outH; i++) {
+    for (let j = 0; j < outW; j++) {
+      let s = 0;
+      for (let u = 0; u < poolH; u++) {
+        for (let v = 0; v < poolW; v++) {
+          s += image[i * strideH + u][j * strideW + v];
+        }
+      }
+      out[i][j] = s / area;
+    }
+  }
+  return out;
+}

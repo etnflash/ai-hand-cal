@@ -354,3 +354,34 @@
   color: var(--bad);
   border-color: var(--bad);
 }
+
+@media (max-width: 640px) {
+  .root {
+    padding: 1.25rem 1rem 5rem;
+  }
+
+  .title {
+    font-size: clamp(1.55rem, 7vw, 2rem);
+  }
+
+  .picker {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.25rem;
+  }
+
+  .pill {
+    flex-shrink: 0;
+    min-width: 2.4rem;
+    height: 2.4rem;
+  }
+
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: color-mix(in srgb, var(--paper) 94%, white);
+    padding-top: 0.5rem;
+  }
+}

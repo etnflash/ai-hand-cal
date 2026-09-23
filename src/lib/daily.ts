@@ -19,12 +19,15 @@ const POOL = [
   "rmsnorm",
   "lora",
   "cnn",
+  "pooling",
   "vae",
   "multihead",
   "rope",
   "dropout",
   "crossentropy",
   "causal",
+  "lstm",
+  "gnn",
 ];
 
 export type DailyChallenge = {
